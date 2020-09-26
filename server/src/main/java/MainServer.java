@@ -1,21 +1,42 @@
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.EnumSet;
 
 public class MainServer {
     public static void main(String[] args) {
-        try (ServerSocket sskt = new ServerSocket(8087)) {
-            System.out.println("Server is ready");
-            try(Socket socket = sskt.accept(); BufferedInputStream in = new BufferedInputStream(socket.getInputStream())) {
-                System.out.println("Client is connected");
-                int n;
-                while ((n = in.read()) != -1) {
-                    System.out.print((char) n);
-                }
+        String filePath = "C:/Test2/temp.txt"; // Потом получать путь перед записью файла
+        try {
+            ServerSocketChannel serverSC;
+            SocketChannel sc;
+            serverSC = ServerSocketChannel.open();
+            serverSC.socket().bind(new InetSocketAddress(8787));
+            sc = serverSC.accept();
+            ConsoleHelper.getMessage("Connection is on");
+            Path path = Paths.get(filePath);
+            FileChannel fileChannel = FileChannel.open(path,
+                    EnumSet.of(StandardOpenOption.CREATE,
+                            StandardOpenOption.TRUNCATE_EXISTING,
+                            StandardOpenOption.WRITE)
+            ); // Подсмотрел в интеренете как писать, если нет файла на сервере или если надо переписать содержимое
+            ByteBuffer buffer = ByteBuffer.allocate(1024);
+            while(sc.read(buffer) > 0) {
+                buffer.flip();
+                fileChannel.write(buffer);
+                buffer.clear();
             }
+            fileChannel.close();
+            ConsoleHelper.getMessage("File received");
+            sc.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 }
