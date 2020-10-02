@@ -13,13 +13,13 @@ public class ConsoleHelper {
                 int i;
                 String buff = sc.nextLine();
                 i = Integer.parseInt(buff);
-                if (i > 0 && i < 5) {
+                if (i > 0 && i < 6) {
                     return i;
                 } else {
-                    printMessage("Введите пункт меню от 1 до 4");
+                    printMessage("Введите пункт меню от 1 до 5");
                 }
             } catch (NumberFormatException e) {
-                printMessage("Введите пункт меню от 1 до 4");
+                printMessage("Введите пункт меню от 1 до 5");
             }
         }
     }
