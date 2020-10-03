@@ -18,12 +18,12 @@ public class MainServer {
                     .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new ProtocolHandler(), new EchoProtocolHandler()); // Тут хэндлеры
+                            ch.pipeline().addLast(new ProtocolHandler(), new EchoProtocolHandler());
                         }
                     })
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             ChannelFuture f = b.bind(8787).sync();
-            ConsoleHelper.printMessage("Server is ONLINE");
+            CommandHelper.printMessage("Server is ONLINE");
             f.channel().closeFuture().sync();
         } finally {
             workerGroup.shutdownGracefully();
