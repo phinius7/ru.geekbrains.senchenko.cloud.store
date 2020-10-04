@@ -1,7 +1,9 @@
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class MainClient {
@@ -25,7 +27,7 @@ public class MainClient {
                     upload("C:/temp.txt", "nickT"); // заглушка. Потом запрашивать в консоли у клиента
                     break;
                 case (TWO):
-                    download("temp.txt", "C:/Temp/"); // заглушка
+                    download("temp.txt", "C:/Temp/", "nickT"); // заглушка
                     break;
                 case (THREE):
                     delete("temp.txt", "nickT"); // заглушка
@@ -42,7 +44,7 @@ public class MainClient {
     private static void doAuthorization() { // Возможно надо будет совместить с doConnection()
         try (Socket socket = new Socket("localhost", 8787)) {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-//       TODO У ConsoleHelper сделать метод приема логина и пароля и по out отравить данные для регистрации
+//       TODO Сделать метод приема логина и пароля и по out отравить данные для регистрации
             CommandHelper.printMessage("Авторизация выполнена");
             out.close();
         } catch (Exception e) {
@@ -68,9 +70,9 @@ public class MainClient {
             byte[] buff = Files.readAllBytes(Paths.get(absPath));
             out.write(buff);
             // Принимаем ответ
-            Scanner in = new Scanner(socket.getInputStream());
-            String x = in.nextLine();
-            CommandHelper.printMessage(x);
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+            byte[] bytes = in.readAllBytes();
+            CommandHelper.printMessage("> " + new String(bytes));
             // Закрываем соединение
             in.close();
             out.close();
@@ -80,10 +82,38 @@ public class MainClient {
         }
     }
 
-    private static void download(String fileName, String filePath) {
+    private static void download(String fileName, String filePath, String nick) {
         /* Не понятно, как вернуть массив байтов через DataInputStream. Пробовал заменить Scanner на DataInputStream,
          * но он повисает - не понимаю почему. А так в теории следует отправить на сервер: команду, ник клиента, имя файла,
          * а сервер должен вернуть массив байтов файла. А уже в этом методе записать данные в файл по пути, переданным клиентом.*/
+        try {
+            short nickNameLength = (short) nick.length();
+            short fileNameLength = (short) fileName.length();
+            Socket socket = new Socket("localhost", 8787);
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            out.writeByte(CommandHelper.getCommandDownload());
+            out.writeShort(nickNameLength);
+            out.write(nick.getBytes());
+            out.writeShort(fileNameLength);
+            out.write(fileName.getBytes());
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+            byte[] bytes = in.readAllBytes();
+            if (bytes[0] == CommandHelper.getCommandDownload()) {
+                // Тут логика сохранения файла на диск
+                byte[] finalBytes = new byte[bytes.length - 1];
+                System.arraycopy(bytes, 1, finalBytes, 0, bytes.length - 1);
+                Path path = Paths.get(filePath + fileName);
+                Files.write(path, finalBytes);
+                CommandHelper.printMessage("> Сохранение " + filePath + fileName + " выполнено");
+            } else {
+                CommandHelper.printMessage("> " + new String(bytes));
+            }
+            in.close();
+            out.close();
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void delete(String fileName, String nick) {
@@ -97,11 +127,9 @@ public class MainClient {
             out.write(nick.getBytes());
             out.writeShort(fileNameLength);
             out.write(fileName.getBytes());
-            // Принимаем ответ
-            Scanner in = new Scanner(socket.getInputStream());
-            String x = in.nextLine();
-            CommandHelper.printMessage(x);
-            // Закрываем соединение
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+            byte[] bytes = in.readAllBytes();
+            CommandHelper.printMessage("> " + new String(bytes));
             in.close();
             out.close();
             socket.close();
@@ -111,10 +139,21 @@ public class MainClient {
     }
 
     private static void view(String nick) {
-        try (Socket socket = new Socket("localhost", 8787)) {
+        try {
+            short nickNameLength = (short) nick.length();
+            Socket socket = new Socket("localhost", 8787);
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             out.writeByte(CommandHelper.getCommandView());
-            /* Анологично должен вернуть массив байтов, а в методе перевести его в String и распечатать.*/
+            out.writeShort(nickNameLength);
+            out.write(nick.getBytes());
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+            byte[] bytes = in.readAllBytes();
+            // Изменяем строку для лучшей читабельности
+            String x = new String(bytes).replaceAll(" ", "\n> ");
+            CommandHelper.printMessage("> " + x);
+            in.close();
+            out.close();
+            socket.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

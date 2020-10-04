@@ -7,7 +7,8 @@ public class CommandHelper {
     private static final byte COMMAND_UPLOAD = 33;
     private static final byte COMMAND_DOWNLOAD = 37;
     private static final byte COMMAND_DELETE = 66;
-    private static final byte ERROR_DELETE = 69;
+    private static final byte NOT_FOUND = -19;
+    private static final byte FILE_FOUND = 3;
 
     public static byte getEMPTY() {
         return EMPTY;
@@ -33,8 +34,8 @@ public class CommandHelper {
         return COMMAND_DELETE;
     }
 
-    public static byte getErrorDelete() {
-        return ERROR_DELETE;
+    public static byte getNotFound() {
+        return NOT_FOUND;
     }
 
     private static Scanner sc = new Scanner(System.in);

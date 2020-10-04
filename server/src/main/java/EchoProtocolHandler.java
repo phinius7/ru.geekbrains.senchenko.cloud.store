@@ -3,6 +3,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 
+import java.util.Arrays;
+
 public class EchoProtocolHandler extends ChannelOutboundHandlerAdapter {
 
     @Override
@@ -12,23 +14,33 @@ public class EchoProtocolHandler extends ChannelOutboundHandlerAdapter {
          * Пробовал по аналогии с ProtocolHandler писать по порядку сначала байт, потом массив байтов, но почему-то
          * читается только то, что отправил первым */
         byte[] bytes = (byte[]) msg;
+        if (bytes[0] == CommandHelper.getEMPTY()) {
+            returnBytes(ctx, "Файлы отсутствуют".getBytes());
+        }
         if (bytes[0] == CommandHelper.getCommandUpload()) {
-            returnAnswer(ctx, "[Успешно загружено]");
+            returnBytes(ctx, "Успешно загружено".getBytes());
+        }
+        if (bytes[0] == CommandHelper.getCommandDownload()) {
+            returnBytes(ctx, bytes);
+        }
+        if (bytes[0] == CommandHelper.getCommandView()) {
+            byte[] answer = new byte[bytes.length - 1];
+            System.arraycopy(bytes, 1, answer, 0, bytes.length - 1);
+            returnBytes(ctx, answer);
         }
         if (bytes[0] == CommandHelper.getCommandDelete()) {
-            returnAnswer(ctx, "[Успешно удалено]");
+            returnBytes(ctx, "Успешно удалено".getBytes());
         }
-        if (bytes[0] == CommandHelper.getErrorDelete()) {
-            returnAnswer(ctx, "[Данный файл отсутствует]");
+        if (bytes[0] == CommandHelper.getNotFound()) {
+            returnBytes(ctx, "Данный файл отсутствует".getBytes());
         }
     }
 
-    private void returnAnswer(ChannelHandlerContext ctx, String answer) {
-        String str = answer + "\n";
-        byte[] arr = str.getBytes();
-        ByteBuf buf = ctx.alloc().buffer(arr.length);
-        buf.writeBytes(arr);
+    private void returnBytes(ChannelHandlerContext ctx, byte[] bytes) {
+        ByteBuf buf = ctx.alloc().buffer(bytes.length);
+        buf.writeBytes(bytes);
         ctx.writeAndFlush(buf);
+        ctx.close();
         buf.release();
     }
 }

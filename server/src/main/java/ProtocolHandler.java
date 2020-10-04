@@ -3,8 +3,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.util.Arrays;
 
 public class ProtocolHandler extends ChannelInboundHandlerAdapter {
 
@@ -53,10 +53,38 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
             }
             CommandHelper.printMessage("UPL Success");
             ctx.channel().writeAndFlush(new byte[] {CommandHelper.getCommandUpload()}); // Отправляю назад, ответ уходит в EchoProtocolHandler
+            ctx.close();
         }
     }
 
     private void downloading(ChannelHandlerContext ctx, ByteBuf buf) {
+        short nickSize = buf.readShort();
+        byte[] nickBytes = new byte[nickSize];
+        buf.readBytes(nickBytes);
+        String nick = new String(nickBytes);
+        CommandHelper.printMessage(nick);
+        short fileNameSize = buf.readShort();
+        byte[] fileNameBytes = new byte[fileNameSize];
+        buf.readBytes(fileNameBytes);
+        String fileName = new String(fileNameBytes);
+        CommandHelper.printMessage(fileName);
+        try {
+            if (Files.exists(Paths.get("server_repository/" + nick + "/" + fileName))) {
+                byte[] fileBytes = Files.readAllBytes(Paths.get("server_repository/" + nick + "/" + fileName));
+                byte[] resBytes = new byte[fileBytes.length + 1];
+                resBytes[0] = CommandHelper.getCommandDownload();
+                System.arraycopy(fileBytes, 0, resBytes, 1, fileBytes.length);
+                CommandHelper.printMessage("File is exist");
+                ctx.channel().writeAndFlush(resBytes);
+            } else {
+                CommandHelper.printMessage("NOT FND Error");
+                ctx.channel().writeAndFlush(new byte[] {CommandHelper.getNotFound()});
+            }
+            ctx.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
     }
 
@@ -79,12 +107,43 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
             ctx.channel().writeAndFlush(new byte[] {CommandHelper.getCommandDelete()});
         } else {
             CommandHelper.printMessage("DEL Error");
-            ctx.channel().writeAndFlush(new byte[] {CommandHelper.getErrorDelete()});
+            ctx.channel().writeAndFlush(new byte[] {CommandHelper.getNotFound()});
         }
+        ctx.close();
     }
 
     private void viewing(ChannelHandlerContext ctx, ByteBuf buf) {
-
+        short nickSize = buf.readShort();
+        byte[] nickBytes = new byte[nickSize];
+        buf.readBytes(nickBytes);
+        String nick = new String(nickBytes);
+        CommandHelper.printMessage(nick);
+        if (Files.exists(Paths.get("server_repository/" + nick))) {
+            StringBuilder sb = new StringBuilder();
+            Path dir = Paths.get("server_repository/" + nick);
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+                for (Path file: stream) {
+                    sb.append(file.getFileName()).append(" ");
+                }
+            } catch (IOException | DirectoryIteratorException e) {
+                e.printStackTrace();
+            }
+            String resultLine = sb.toString().trim();
+            byte[] bytes = resultLine.getBytes();
+            if (bytes.length != 0) {
+                CommandHelper.printMessage("VIEW Success {" + resultLine + "}");
+                byte[] resBytes = new byte[bytes.length + 1];
+                resBytes[0] = CommandHelper.getCommandView();
+                System.arraycopy(bytes, 0, resBytes, 1, bytes.length);
+                ctx.channel().writeAndFlush(resBytes);
+            } else {
+                CommandHelper.printMessage("EMPTY");
+                ctx.channel().writeAndFlush(new byte[]{CommandHelper.getEMPTY()});
+            }
+        } else {
+            ctx.channel().writeAndFlush(new byte[]{CommandHelper.getEMPTY()});
+        }
+        ctx.close();
     }
 
     @Override
