@@ -3,8 +3,6 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Scanner;
 
 public class MainClient {
     private static boolean isFlag = true;
@@ -41,10 +39,10 @@ public class MainClient {
         } while (isFlag);
     }
 
-    private static void doAuthorization() { // Возможно надо будет совместить с doConnection()
+    private static void doAuthorization() {
         try (Socket socket = new Socket("localhost", 8787)) {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-//       TODO Сделать метод приема логина и пароля и по out отравить данные для регистрации
+        // TODO Сделать метод приема логина и пароля и по out отравить данные для регистрации
             CommandHelper.printMessage("Авторизация выполнена");
             out.close();
         } catch (Exception e) {
@@ -56,10 +54,10 @@ public class MainClient {
         try {
             File file = new File(filePath);
             String fileName = file.getName();
-            String absPath = file.getAbsolutePath();
             short nickNameLength = (short) nick.length();
             short fileNameLength = (short) fileName.length();
             Socket socket = new Socket("localhost", 8787);
+            // Отправляем команду на загрузку, данныйе файла и сам файл
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             out.writeByte(CommandHelper.getCommandUpload());
             out.writeShort(nickNameLength);
@@ -67,7 +65,7 @@ public class MainClient {
             out.writeShort(fileNameLength);
             out.write(fileName.getBytes());
             out.writeLong(file.length());
-            byte[] buff = Files.readAllBytes(Paths.get(absPath));
+            byte[] buff = Files.readAllBytes(Paths.get(filePath));
             out.write(buff);
             // Принимаем ответ
             DataInputStream in = new DataInputStream(socket.getInputStream());
@@ -83,9 +81,6 @@ public class MainClient {
     }
 
     private static void download(String fileName, String filePath, String nick) {
-        /* Не понятно, как вернуть массив байтов через DataInputStream. Пробовал заменить Scanner на DataInputStream,
-         * но он повисает - не понимаю почему. А так в теории следует отправить на сервер: команду, ник клиента, имя файла,
-         * а сервер должен вернуть массив байтов файла. А уже в этом методе записать данные в файл по пути, переданным клиентом.*/
         try {
             short nickNameLength = (short) nick.length();
             short fileNameLength = (short) fileName.length();
@@ -99,7 +94,7 @@ public class MainClient {
             DataInputStream in = new DataInputStream(socket.getInputStream());
             byte[] bytes = in.readAllBytes();
             if (bytes[0] == CommandHelper.getCommandDownload()) {
-                // Тут логика сохранения файла на диск
+                // Логика сохранения файла на диск
                 byte[] finalBytes = new byte[bytes.length - 1];
                 System.arraycopy(bytes, 1, finalBytes, 0, bytes.length - 1);
                 Path path = Paths.get(filePath + fileName);

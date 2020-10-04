@@ -3,16 +3,10 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 
-import java.util.Arrays;
-
 public class EchoProtocolHandler extends ChannelOutboundHandlerAdapter {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        /* Почему массив байтов - хочу, чтобы сервер возвращал массив, где первый байт это - ответная команда,
-         * что делать с полседующими байтами и в зависимости от нее что писать в буфер для ответа клиенту.
-         * Пробовал по аналогии с ProtocolHandler писать по порядку сначала байт, потом массив байтов, но почему-то
-         * читается только то, что отправил первым */
         byte[] bytes = (byte[]) msg;
         if (bytes[0] == CommandHelper.getEMPTY()) {
             returnBytes(ctx, "Файлы отсутствуют".getBytes());

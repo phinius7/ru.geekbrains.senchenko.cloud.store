@@ -8,7 +8,6 @@ public class CommandHelper {
     private static final byte COMMAND_DOWNLOAD = 37;
     private static final byte COMMAND_DELETE = 66;
     private static final byte NOT_FOUND = -19;
-    private static final byte FILE_FOUND = 3;
 
     public static byte getEMPTY() {
         return EMPTY;
