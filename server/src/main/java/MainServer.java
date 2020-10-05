@@ -23,9 +23,11 @@ public class MainServer {
                     })
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             ChannelFuture f = b.bind(8787).sync();
+            ServiceSQL.connect();
             CommandHelper.printMessage("Server is ONLINE");
             f.channel().closeFuture().sync();
         } finally {
+            ServiceSQL.disconnect();
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
         }

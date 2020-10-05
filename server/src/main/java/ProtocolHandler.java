@@ -4,28 +4,70 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 
 import java.io.*;
 import java.nio.file.*;
-import java.util.Arrays;
+import java.sql.SQLException;
 
 public class ProtocolHandler extends ChannelInboundHandlerAdapter {
-
-
+    // TODO заменить хелпер на логи
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf buf = ((ByteBuf) msg);
         byte firstByte = buf.readByte();
+        if (firstByte == CommandHelper.getCommandLogin()) {
+            try {
+                authorization(ctx, buf);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
         if (firstByte == CommandHelper.getCommandUpload()) {
-            uploading(ctx, buf);
+            try {
+                uploading(ctx, buf);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         if (firstByte == CommandHelper.getCommandDownload()) {
             downloading(ctx, buf);
         }
         if (firstByte == CommandHelper.getCommandDelete()) {
-            deleting(ctx, buf);
+            try {
+                deleting(ctx, buf);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         if (firstByte == CommandHelper.getCommandView()) {
             viewing(ctx, buf);
         }
+    }
+
+    private void authorization(ChannelHandlerContext ctx, ByteBuf buf) throws SQLException {
+        // Получение логина
+        short loginSize = buf.readShort();
+        byte[] loginBytes = new byte[loginSize];
+        buf.readBytes(loginBytes);
+        String login = new String(loginBytes);
+        // Если написать логин на русском языке то тогда не корректно проходит чтение short passwordSize = buf.readShort();
+        // Получение пароля
+        short passwordSize = buf.readShort();
+        byte[] passBytes = new byte[passwordSize];
+        buf.readBytes(passBytes);
+        String password = new String(passBytes);
+        // Проверка логина и пароля
+        String nick = ServiceSQL.getNickByLoginAndPass(login, password);
+        if (nick != null) {
+            byte[] nickBytes = nick.getBytes();
+            byte[] resBytes = new byte[nickBytes.length + 1];
+            resBytes[0] = CommandHelper.getCommandLogin();
+            System.arraycopy(nickBytes, 0, resBytes, 1, nickBytes.length);
+            CommandHelper.printMessage("Nick is exist");
+            ctx.channel().writeAndFlush(resBytes);
+        } else {
+            CommandHelper.printMessage("Nick NOT FND Error");
+            ctx.channel().writeAndFlush(new byte[]{CommandHelper.getNickNotFound()});
+        }
+        ctx.close();
     }
 
     private void uploading(ChannelHandlerContext ctx, ByteBuf buf) throws IOException {
@@ -34,13 +76,11 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         byte[] nickBytes = new byte[nickSize];
         buf.readBytes(nickBytes);
         String nick = new String(nickBytes);
-        CommandHelper.printMessage(nick);
         // Получение файла
         short fileNameSize = buf.readShort();
         byte[] fileNameBytes = new byte[fileNameSize];
         buf.readBytes(fileNameBytes);
         String fileName = new String(fileNameBytes);
-        CommandHelper.printMessage(fileName);
         // Создание директории клиента на сервере
         if (!Files.exists(Paths.get("server_repository/" + nick))) {
             Files.createDirectories(Paths.get("server_repository/" + nick));
@@ -52,7 +92,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                 out.write(buf.readByte());
             }
             CommandHelper.printMessage("UPL Success");
-            ctx.channel().writeAndFlush(new byte[] {CommandHelper.getCommandUpload()}); // Отправляю назад, ответ уходит в EchoProtocolHandler
+            ctx.channel().writeAndFlush(new byte[] {CommandHelper.getCommandUpload()});
             ctx.close();
         }
     }
@@ -62,12 +102,10 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         byte[] nickBytes = new byte[nickSize];
         buf.readBytes(nickBytes);
         String nick = new String(nickBytes);
-        CommandHelper.printMessage(nick);
         short fileNameSize = buf.readShort();
         byte[] fileNameBytes = new byte[fileNameSize];
         buf.readBytes(fileNameBytes);
         String fileName = new String(fileNameBytes);
-        CommandHelper.printMessage(fileName);
         try {
             if (Files.exists(Paths.get("server_repository/" + nick + "/" + fileName))) {
                 byte[] fileBytes = Files.readAllBytes(Paths.get("server_repository/" + nick + "/" + fileName));
@@ -94,13 +132,11 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         byte[] nickBytes = new byte[nickSize];
         buf.readBytes(nickBytes);
         String nick = new String(nickBytes);
-        CommandHelper.printMessage(nick);
         // Получение файла
         short fileNameSize = buf.readShort();
         byte[] fileNameBytes = new byte[fileNameSize];
         buf.readBytes(fileNameBytes);
         String fileName = new String(fileNameBytes);
-        CommandHelper.printMessage(fileName);
         if (Files.exists(Paths.get("server_repository/" + nick + "/" + fileName))) {
             Files.delete(Paths.get("server_repository/" + nick + "/" + fileName));
             CommandHelper.printMessage("DEL Success");
@@ -117,7 +153,6 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         byte[] nickBytes = new byte[nickSize];
         buf.readBytes(nickBytes);
         String nick = new String(nickBytes);
-        CommandHelper.printMessage(nick);
         if (Files.exists(Paths.get("server_repository/" + nick))) {
             StringBuilder sb = new StringBuilder();
             Path dir = Paths.get("server_repository/" + nick);
@@ -147,7 +182,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
         ctx.close();
     }
