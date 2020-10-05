@@ -1,21 +1,43 @@
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 public class MainServer {
-    public static void main(String[] args) {
-        try (ServerSocket sskt = new ServerSocket(8087)) {
-            System.out.println("Server is ready");
-            try(Socket socket = sskt.accept(); BufferedInputStream in = new BufferedInputStream(socket.getInputStream())) {
-                System.out.println("Client is connected");
-                int n;
-                while ((n = in.read()) != -1) {
-                    System.out.print((char) n);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void run() throws Exception {
+        EventLoopGroup bossGroup = new NioEventLoopGroup();
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        try {
+            ServerBootstrap b = new ServerBootstrap();
+            b.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
+                        @Override
+                        public void initChannel(SocketChannel ch) throws Exception {
+                            ch.pipeline().addLast(new ProtocolHandler(), new EchoProtocolHandler());
+                        }
+                    })
+                    .childOption(ChannelOption.SO_KEEPALIVE, true);
+            ChannelFuture f = b.bind(8787).sync();
+            CommandHelper.printMessage("Server is ONLINE");
+            f.channel().closeFuture().sync();
+        } finally {
+            workerGroup.shutdownGracefully();
+            bossGroup.shutdownGracefully();
         }
+    }
+
+
+    public static void main(String[] args) {
+        try {
+            new MainServer().run();
+        } catch (Exception e) {
+            System.out.println("Server start error");
+        }
+
     }
 }
