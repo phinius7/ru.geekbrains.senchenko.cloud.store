@@ -4,11 +4,13 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 
 public class EchoProtocolHandler extends ChannelOutboundHandlerAdapter {
-
     @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
         byte[] bytes = (byte[]) msg;
 
+        if (bytes[0] == CommandHelper.getLogOut()) {
+            returnBytes(ctx, new byte[]{CommandHelper.getLogOut()});
+        }
         if (bytes[0] == CommandHelper.getEMPTY()) {
             returnBytes(ctx, "ПУСТО".getBytes());
         }

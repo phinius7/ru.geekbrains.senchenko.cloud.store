@@ -22,8 +22,13 @@ public class ServiceSQL {
         if (rs.next()) {
             return rs.getString(1);
         }
-
         return null;
+    }
+
+    public static boolean isLogin(String nick) throws SQLException {
+        String sql = String.format("SELECT id FROM main where nickname = '%s'", nick);
+        ResultSet rs = stmt.executeQuery(sql);
+        return rs.next();
     }
 
     public static void disconnect() {
