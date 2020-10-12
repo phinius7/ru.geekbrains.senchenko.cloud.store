@@ -7,6 +7,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
+import java.util.logging.Level;
+
 public class MainServer {
     public void run() throws Exception {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -24,7 +26,8 @@ public class MainServer {
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             ChannelFuture f = b.bind(8787).sync();
             ServiceSQL.connect();
-            CommandHelper.printMessage("Server is ONLINE");
+            LogHelper.protocolLogger.log(Level.INFO, "Server is ONLINE");
+            LogHelper.echoLogger.log(Level.INFO, "Server is ONLINE");
             f.channel().closeFuture().sync();
         } finally {
             ServiceSQL.disconnect();
@@ -33,12 +36,13 @@ public class MainServer {
         }
     }
 
-
     public static void main(String[] args) {
+        LogHelper.startLog();
         try {
             new MainServer().run();
         } catch (Exception e) {
-            System.out.println("Server start error");
+            LogHelper.protocolLogger.log(Level.WARNING, "Server is not start");
+            LogHelper.echoLogger.log(Level.WARNING, "Server is not start");
         }
 
     }

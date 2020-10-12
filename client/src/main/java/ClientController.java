@@ -6,10 +6,7 @@ import java.net.Socket;
 import java.nio.file.*;
 
 public class ClientController {
-    private static String login;
-    private static String password;
     private static String nick;
-    private static short nickLength;
 
     public static String getNick() {
         return nick;
@@ -17,9 +14,9 @@ public class ClientController {
 
     static void doAuthorization() {
         CommandHelper.printMessage("Введите логин");
-        login = CommandHelper.getText();
+        String login = CommandHelper.getText();
         CommandHelper.printMessage("Введите пароль");
-        password = CommandHelper.getText();
+        String password = CommandHelper.getText();
         short loginLength = (short) login.length();
         short passwordLength = (short) password.length();
         try {
@@ -36,7 +33,6 @@ public class ClientController {
                 CommandHelper.printMessage("Не верный логин и(или) пароль");
             } else {
                 nick = new String(bytes);
-                nickLength = (short) nick.length();
                 CommandHelper.printMessage("Авторизация выполнена. Здравствуйте " + nick);
             }
             in.close();

@@ -7,7 +7,7 @@ public class MainClient {
     private static final int ZERO = 0;
 
     public static void main(String[] args) {
-        CommandHelper.printMessage("Начало работы. Введите логин и пароль");
+        CommandHelper.printMessage("Начало работы. Введите логин и пароль"); // для проверки login1 pass1
         do {
             ClientController.doAuthorization();
         } while (ClientController.getNick() == null);
