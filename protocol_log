@@ -1,21 +1,25 @@
-12-59-2020 17:59:08	msg:Server is ONLINE	lvl: INFO
-12-59-2020 17:59:20	msg:Start to Authorization	lvl: INFO
-12-59-2020 17:59:20	msg:Nick from this data is not found. Access is Denied	lvl: CONFIG
-12-59-2020 17:59:24	msg:Start to Authorization	lvl: INFO
-12-59-2020 17:59:31	msg:Start to Authorization	lvl: INFO
-12-59-2020 17:59:31	msg:nick1 is exist. Access is Allowed	lvl: CONFIG
-12-00-2020 18:00:53	msg:Start to View	lvl: INFO
-12-00-2020 18:00:53	msg:Log in confirmed	lvl: INFO
-12-00-2020 18:00:53	msg:Files found in repository	lvl: INFO
-12-03-2020 18:03:46	msg:Server is ONLINE	lvl: INFO
-12-04-2020 18:04:00	msg:Start to Authorization	lvl: INFO
-12-04-2020 18:04:00	msg:nick1 is exist. Access is Allowed	lvl: CONFIG
-12-04-2020 18:04:09	msg:Start to Delete	lvl: INFO
-12-04-2020 18:04:09	msg:Log in confirmed	lvl: INFO
-12-04-2020 18:04:09	msg:File not found	lvl: INFO
-12-04-2020 18:04:18	msg:Start to Delete	lvl: INFO
-12-04-2020 18:04:18	msg:Log in confirmed	lvl: INFO
-12-04-2020 18:04:18	msg:File found and deleted	lvl: INFO
-12-04-2020 18:04:24	msg:Start to View	lvl: INFO
-12-04-2020 18:04:24	msg:Log in confirmed	lvl: INFO
-12-04-2020 18:04:24	msg:Files found in repository	lvl: INFO
+17-13-2020 20:13:22	msg:Server is ONLINE	lvl: INFO
+17-13-2020 20:13:40	msg:Start to Authorization	lvl: INFO
+17-13-2020 20:13:40	msg:nick1 is exist. Access is Allowed	lvl: CONFIG
+17-13-2020 20:13:44	msg:Start to View	lvl: INFO
+17-13-2020 20:13:44	msg:Log in confirmed	lvl: INFO
+17-13-2020 20:13:44	msg:Files found in repository	lvl: INFO
+17-14-2020 20:14:01	msg:Start to Download	lvl: INFO
+17-14-2020 20:14:01	msg:Log in confirmed	lvl: INFO
+17-14-2020 20:14:01	msg:File found	lvl: INFO
+17-14-2020 20:14:01	msg:File sent	lvl: INFO
+17-14-2020 20:14:35	msg:Start to Download	lvl: INFO
+17-14-2020 20:14:35	msg:Log in confirmed	lvl: INFO
+17-14-2020 20:14:35	msg:File found	lvl: INFO
+17-14-2020 20:14:35	msg:File sent	lvl: INFO
+17-14-2020 20:14:57	msg:Start to Download	lvl: INFO
+17-14-2020 20:14:57	msg:Log in confirmed	lvl: INFO
+17-14-2020 20:14:57	msg:File found	lvl: INFO
+17-14-2020 20:14:57	msg:File sent	lvl: INFO
+17-15-2020 20:15:18	msg:Start to View	lvl: INFO
+17-15-2020 20:15:18	msg:Log in confirmed	lvl: INFO
+17-15-2020 20:15:18	msg:Files found in repository	lvl: INFO
+17-16-2020 20:16:10	msg:Start to Download	lvl: INFO
+17-16-2020 20:16:10	msg:Log in confirmed	lvl: INFO
+17-16-2020 20:16:10	msg:File found	lvl: INFO
+17-16-2020 20:16:10	msg:File sent	lvl: INFO

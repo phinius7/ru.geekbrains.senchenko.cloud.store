@@ -44,9 +44,21 @@ public class ClientController {
     }
 
     static void upload() {
-        CommandHelper.printMessage("Введите путь к файлу. [0.Назад]");
-        String filePath = CommandHelper.getText();
-        if (!filePath.equals("0")) {
+        String filePath = "";
+        CommandHelper.printMessage("1.Загрузить с локального репозитория\n2.Загрузить по указанному пути\n0.Назад");
+        int choice = CommandHelper.choiceBetweenThree();
+        if (choice == 0) {
+            return;
+        }
+        if (choice == 1) {
+            CommandHelper.printMessage("Введите ИМЯ файла");
+            String fileName = CommandHelper.getText();
+            filePath = "client_repository/" + fileName;
+        }
+        if (choice == 2) {
+            CommandHelper.printMessage("Введите ПУТЬ к файлу");
+            filePath = CommandHelper.getText();
+        }
             if (Files.exists(Paths.get(filePath))) {
                 try {
                     File file = new File(filePath);
@@ -79,7 +91,6 @@ public class ClientController {
             } else {
                 CommandHelper.printMessage("Неверно указан путь к файлу");
             }
-        }
     }
 
     static void download() {
@@ -89,10 +100,10 @@ public class ClientController {
         if (choice == 0) {
             return;
         }
-        CommandHelper.printMessage("Введите имя файла");
+        CommandHelper.printMessage("Введите ИМЯ файла");
         String fileName = CommandHelper.getText();
         if (choice == 2) {
-            CommandHelper.printMessage("Введите путь сохранения");
+            CommandHelper.printMessage("Введите ПУТЬ сохранения");
             filePath = CommandHelper.getText();
         }
         try {
@@ -215,7 +226,9 @@ public class ClientController {
                 }
                 if (sb.length() > 0) {
                     String res = sb.toString();
-                    res = res.substring(0, (res.length() - 1));
+                    if (!res.equals("ПУСТО")) {
+                        res = res.substring(0, (res.length() - 1));
+                    }
                     res = res.replace(";", "\n> ");
                     CommandHelper.printMessage("> " + res);
                 } else {

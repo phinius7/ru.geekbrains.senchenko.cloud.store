@@ -12,7 +12,7 @@ public class MainClient {
             ClientController.doAuthorization();
         } while (ClientController.getNick() == null);
         do {
-            CommandHelper.printMessage("Введите команду:\n1.Загрузить\n2.Скачать\n3.Удалить\n4.Список файлов\n0.Выход");
+            CommandHelper.printMessage("Введите команду:\n1.Загрузить на Сервер\n2.Скачать с Сервера\n3.Удалить\n4.Список файлов\n0.Выход");
             int answer = CommandHelper.getMenuItems();
             switch (answer) {
                 case (ONE):
